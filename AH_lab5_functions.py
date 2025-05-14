@@ -30,37 +30,55 @@ class SmartRaster:
         except Exception as e:
             raise RuntimeError(f"Error opening raster file '{raster_path}': {e}")
 
-    def calculate_ndvi(self, red_band_index=4, nir_band_index=5):
+    def calculate_ndvi(self, band4_index=4, band3_index=3):
+        """
+        Calculate NDVI using NIR and Red bands.
+
+        Parameters:
+        - band4_index (int): Index of the NIR band (1-based)
+        - band3_index (int): Index of the Red band (1-based)
+
+        Returns:
+        - tuple: (okay, ndvi_array) where okay is True/False
+        """
+        okay = True
         try:
-            if red_band_index > self.dataset.count or nir_band_index > self.dataset.count:
-                raise ValueError("Specified band indices exceed number of bands in the raster.")
-            red = self.dataset.read(red_band_index).astype("float32")
-            nir = self.dataset.read(nir_band_index).astype("float32")
+            nir = self.dataset.read(band4_index).astype("float32")
+            red = self.dataset.read(band3_index).astype("float32")
+        except Exception as e:
+            okay = False
+            print(f"Error reading bands: {e}")
+            return okay, None
+
+        try:
             np.seterr(divide="ignore", invalid="ignore")
             ndvi = (nir - red) / (nir + red)
-            return ndvi
+            ndvi = np.clip(ndvi, -1, 1)
+            return okay, ndvi
         except Exception as e:
-            raise RuntimeError(f"Error calculating NDVI for raster '{self.raster_path}': {e}")
+            okay = False
+            print(f"Error calculating NDVI: {e}")
+            return okay, None
 
 
-##################
-# Block 4: 
-#   Set up a new smart vector class using geopandas
-#    that will have a method similar to what did in lab 4
-#    to calculate the zonal statistics for a raster
-#    and add them as a column to the attribute table of the vector
+# ##################
+# # Block 4: 
+# #   Set up a new smart vector class using geopandas
+# #    that will have a method similar to what did in lab 4
+# #    to calculate the zonal statistics for a raster
+# #    and add them as a column to the attribute table of the vector
 
-class SmartVector:
-    def __init__(self, vector_path):
-        self.vector_path = vector_path
-        try:
-            self.gdf = gpd.read_file(vector_path)
-        except Exception as e:
-            raise RuntimeError(f"Error loading vector file: {e}")
+# class SmartVector:
+#     def __init__(self, vector_path):
+#         self.vector_path = vector_path
+#         try:
+#             self.gdf = gpd.read_file(vector_path)
+#         except Exception as e:
+#             raise RuntimeError(f"Error loading vector file: {e}")
 
-    def calculate_zonal_statistics(self, raster_path, stats=['mean'], column_name='zonal_stat'):
-        try:
-            zs = zonal_stats(self.gdf, raster_path, stats=stats, geojson_out=True)
-            self.gdf[column_name] = [z[stats[0]] for z in zs]
-        except Exception as e:
-            raise RuntimeError(f"Error calculating zonal statistics: {e}")
+#     def calculate_zonal_statistics(self, raster_path, stats=['mean'], column_name='zonal_stat'):
+#         try:
+#             zs = zonal_stats(self.gdf, raster_path, stats=stats, geojson_out=True)
+#             self.gdf[column_name] = [z[stats[0]] for z in zs]
+#         except Exception as e:
+#             raise RuntimeError(f"Error calculating zonal statistics: {e}")
