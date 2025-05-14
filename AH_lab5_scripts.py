@@ -29,6 +29,7 @@ except Exception as e:
 parcels_file = "Benton_County_TaxLots.shp"
 
 #  Pass this to your new smart vector class
+import AH_lab5_functions as l5
 smart_vector = l5.SmartVector(parcels_file)
 
 #  Calculate zonal statistics and add to the attribute table of the parcels shapefile
