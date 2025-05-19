@@ -5,6 +5,9 @@ import os
 import rasterio
 import geopandas as gpd
 import numpy as np
+from rasterio import open as rio_open
+from rasterstats import zonal_stats
+import pyproj
 
 ##################
 # Block 2: 
@@ -12,7 +15,7 @@ import numpy as np
 
 # Change this to the directory where your data are
 
-data_dir = r"R:\2025\Spring\GEOG562\Students\hamala\Labs\Lab5_2025\Lab5_Python_Code"
+data_dir = r"R:\2025\Spring\GEOG562\Students\hamala\Labs\Lab5_2025"
 os.chdir(data_dir)
 print(os.getcwd())
 
